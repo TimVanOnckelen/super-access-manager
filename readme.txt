@@ -1,0 +1,37 @@
+=== Super Access Manager ===
+Contributors: thexerox
+Tags: access, manager, restrited content, specific, user management, privacy, single user page, multi user page, page privacy
+Donate link: paypal.me/xeweb
+Requires at least: 4.0
+Tested up to: 4.9.4
+Requires PHP: 5.6
+License: GPLv3
+License URI: http://www.gnu.org/licenses/gpl-3.0.html
+
+Manage access to your post in a more advanced way. Allow specific users and roles to access your blog posts.
+
+== Description ==
+Manage access to your post in a more advanced way. Allow specific users and roles to access your blog posts.
+
+== Installation ==
+1. Go in to your WordPress Admin Panel
+2. Navigate to Plugins-->Add New and click upload
+3. Browse for the super-access-manager.zip file and click upload
+4. Now click activate
+
+== Frequently Asked Questions ==
+= Can i setup access to pages or custom post types? =
+Currently only posts are supported. New post type will be added soon.
+
+= Can you control access on a user based level? =
+You can control access to post for every specic user and on a role base.
+
+== Screenshots ==
+1. Select who can access your post on a user and role based level.
+
+== Changelog ==
+= 0.1.3 =
+* Tweak: Filter out non accessable pages in category counters
+
+= 0.1.2 =
+* Base plugin relaese
