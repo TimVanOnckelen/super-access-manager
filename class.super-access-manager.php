@@ -16,6 +16,10 @@ class Xeweb_sam_main
 	 */
 	private static $userpages;
 
+	private static $personalpages = array();
+
+	private static $category_counter = array();
+
 	/**
 	 * Specific_content constructor.
 	 */
@@ -66,10 +70,12 @@ class Xeweb_sam_main
 	 */
 	private static function frontend_hooks(){
 
-		self::$userpages = self::get_personal_user_pages();
+		self::$personalpages = self::get_personal_user_pages();
 
 		// add shortcode to load all pages
 		add_shortcode("xeweb-sam_user_pages",array(self::class,"show_all_user_pages"));
+		// Legacy support
+		add_shortcode("txsc_all_pages",array(self::class,"show_all_user_pages"));
 
 		// add action
 		add_filter( 'the_content', array(self::class,'check_access') );
@@ -90,7 +96,7 @@ class Xeweb_sam_main
 		add_action( 'add_meta_boxes', array(self::class,'add_custom_meta_box') );
 
 		// save meta
-		add_action( 'save_post', array(self::class,'save_custom_meta_box'), 10, 2 );
+		add_action( 'save_post', array(self::class,'save_custom_meta_box'), 0, 2 );
 
 	}
 
@@ -118,10 +124,10 @@ class Xeweb_sam_main
     public static function add_custom_meta_box(){
 
         add_meta_box(
-            'xeweb-sam_allowed_users',      // Unique ID
+            'xeweb_sam-allowed_users',      // Unique ID
 	        __("User Access","xeweb_sam"),    // Title
             array(self::class,'post_custom_meta_box'),   // Callback function
-	        get_option('txsx_allowed_post_types'),         // Admin page (or post type)
+	        get_option('xeweb-sam_allowed_post_types'),         // Admin page (or post type)
             'normal',         // Context
             'default'         // Priority
         );
@@ -136,19 +142,21 @@ class Xeweb_sam_main
 
 
 		<p>
-            <label for="xeweb-sam_allowed_users"><?php echo __("Choose roles or/and users that have access to the post. If empty, post is accessable for everyone.","xeweb_sam")?></label>
+            <label for="xeweb_sam-allowed_users"><?php echo __("Choose roles or/and users that have access to the post. If empty, post is accessable for everyone.","xeweb_sam")?></label>
             <br />
 		</p>
 		<p>
+			<?php
+			// get users
+			$users = get_users();
+			// get allowed users
+			$post_meta = get_post_meta( $post->ID, 'xeweb_sam-allowed_users', true );
+			// get roles
+			$user_roles = get_editable_roles();
+			?>
 
-            <select  name="xeweb-sam_allowed_users[]" id="xeweb-sam_allowed_users" class="multiple_js_search" multiple="multiple" style="width: 100%" >
+            <select name="xeweb_sam-allowed_users[]" id="xeweb_sam-allowed_users" class="multiple_js_search" multiple="multiple" style="width: 100%" >
                 <?php
-                // get users
-                $users = get_users();
-                // get allowed users
-                $post_meta = get_post_meta( $post->ID, 'xeweb-sam_allowed_users', true );
-                // get roles
-				$user_roles = get_editable_roles();
 
                 // Empty value
 				echo '<option value=""></option>';
@@ -225,25 +233,16 @@ class Xeweb_sam_main
 		$post_type = get_post_type_object( $post->post_type );
 
 		/* Get the posted data and sanitize it for use as an HTML class. */
-		$new_meta_value = ( isset( $_POST['xeweb-sam_allowed_users'] ) ? $_POST['xeweb-sam_allowed_users']  : array() );
+		$new_meta_value = ( isset( $_POST['xeweb_sam-allowed_users'] ) ? $_POST['xeweb_sam-allowed_users']  : '' );
 
 		/* Get the meta key. */
-		$meta_key = 'xeweb-sam_allowed_users';
+		$meta_key = 'xeweb_sam-allowed_users';
 
 		/* Get the meta value of the custom field key. */
 		$meta_value = get_post_meta( $post_id, $meta_key, true );
 
-		/* If a new meta value was added and there was no previous value, add it. */
-		if ( $new_meta_value && '' == $meta_value )
-			add_post_meta( $post_id, $meta_key, $new_meta_value, true );
-
-		/* If the new meta value does not match the old value, update it. */
-		elseif ( $new_meta_value != $meta_value )
-			update_post_meta( $post_id, $meta_key, $new_meta_value );
-
-		/* If there is no new meta value but an old value exists, delete it. */
-		elseif ( '' == $new_meta_value && $meta_value )
-			delete_post_meta( $post_id, $meta_key, $meta_value );
+		// Update the meta
+		update_post_meta( $post_id, $meta_key, $new_meta_value,$meta_value );
 
 	}
 
@@ -258,12 +257,12 @@ class Xeweb_sam_main
 		global $post;
 
 		/* Get the meta value of the custom field key. */
-		$meta_value = get_post_meta( $post->ID, 'xeweb-sam_allowed_users', true );
+		$meta_value = get_post_meta( $post->ID, 'xeweb_sam-allowed_users', true );
 
 		// Only do something is access has been set specificly
 		if(!empty($meta_array[0])) {
 
-			if ( is_array( $meta_value ) && in_array( $post->post_type, get_option( 'txsx_allowed_post_types' ) ) ) { // check if there are access restrictions & user login
+			if ( is_array( $meta_value ) && in_array( $post->post_type, get_option( 'xeweb-sam_allowed_post_types' ) ) ) { // check if there are access restrictions & user login
 
 				if ( is_user_logged_in() ) {
 
@@ -329,7 +328,7 @@ class Xeweb_sam_main
 		foreach ($posts as $post){
 
 		    // Check if the post has a meta array
-			$meta_array = get_post_meta($post->ID,"xeweb-sam_allowed_users",true);
+			$meta_array = get_post_meta($post->ID,"xeweb_sam-allowed_users",true);
 
 			// no settings, nothing to check, so prob public post
 			if(empty($meta_array) OR empty($meta_array[0])){
@@ -398,113 +397,124 @@ class Xeweb_sam_main
 
 		global $wpdb;
 
-		// check if user is logged in
-		if(is_user_logged_in()){
+		    $postarray = array();
 
 		    // get current user
 			$current_user = wp_get_current_user();
-			// create post array
-			$postarray = array();
-			// set "in category"
-			$is_in_category = true;
 
 			// get all meta data from this plugin
 			$metas = $wpdb->get_results(
-				$wpdb->prepare("SELECT meta_value,post_id FROM $wpdb->postmeta where meta_key = %s ORDER BY post_id DESC", 'xeweb-sam_allowed_users')
+				$wpdb->prepare("SELECT meta_value,post_id FROM $wpdb->postmeta where meta_key = %s ORDER BY post_id DESC", 'xeweb_sam-allowed_users')
 			);
 
 
-			// check if restricted pages excists
-			if($metas) {
+				// check if restricted pages excists
+				if ( $metas ) {
 
-				// the counter
-				$counter = 0;
+					// check every meta if user has access to page
+					foreach ( $metas as $access ) {
 
-				// check every meta if user has acces to page
-				foreach ($metas as $access) {
+						$postdata = get_post_field( 'post_status', $access->post_id );
 
-					$postdata = get_post_field('post_status',$access->post_id);
+						if ( $postdata == 'publish' ) {
 
-					if($postdata == 'publish' && $counter < get_option('xeweb-sam_post_limit_widget') ) {
-						$categorys = get_the_category($access->post_id);
+							// unset meta value
+							$access->meta_value = unserialize( $access->meta_value );
 
-						// Set as first category if only on cat
-						if(!isset($categorys[0])){
-							$categorys[0] = $categorys;
-                        }
+							// Do not add to personal pages, if access managment is empty
+							if ( empty( $access->meta_value ) ) {
 
-						// only add to array if category is selected
-						if ($category) {
+								// Is public page, so add to available
+								self::category_count( $access->post_id, true );
+								// go to next post
+								continue;
+							}
 
-							foreach ($categorys as $singlecat) { // check in category
-								if ($category == $singlecat->slug) {
-									$is_in_category = true;
-								}else{
-									$is_in_category = false;
+							if($current_user->ID <= 0) {
+								// Not a logged in user, PAGE HAS ACCESS restrictions so, not for guests
+								self::category_count( $access->post_id, false );
+								// go to next post
+								continue;
+							}
+
+
+							// check for user
+							$usercheck = in_array( $current_user->ID, $access->meta_value );
+							$rolecheck = false;
+
+
+							// check roles
+							foreach ( $current_user->roles as $role ) {
+
+								if ( in_array( $role, $access->meta_value ) ) {
+
+									$rolecheck = true;
+
 								}
-							}
-						}
-
-						// unset meta value
-						$access->meta_value = unserialize($access->meta_value);
-
-						// check for user
-						$usercheck = in_array($current_user->ID, $access->meta_value);
-						$rolecheck = false;
-
-                        // Set category count to zero
-                        // $postarray["categorys"][ $categorys[0]->term_id ]["category_count"] = 0;
-
-						// check roles
-						foreach ($current_user->roles as $role) {
-
-							if (in_array($role, $access->meta_value)) {
-
-								$rolecheck = true;
 
 							}
 
-						}
 
-						if ($usercheck == true) { // check if user has posts
+							if ( $usercheck != true OR $rolecheck != true ) { // check if user has posts
 
-							$postarray["posts"][$access->post_id]["id"] = $access->post_id;
-							$postarray["categorys"][$categorys[0]->term_id]["category_count"]++;
-								$counter++;
+								// If is admin, let him trough if needed
+								if ( get_option( 'xeweb-sam_admin_see_all_pages' ) != "on" && ! current_user_can( 'manage_options' ) ) { // check if admin
 
-						} elseif ($rolecheck == true) { // check roles
+									// Not available counter
+									self::category_count( $access->post_id, false );
+									continue;
 
-							$postarray["posts"][$access->post_id]["id"] = $access->post_id;
-							$postarray["categorys"][$categorys[0]->term_id]["category_count"]++;
-							$counter++;
+								}
 
-						} elseif (get_option('xeweb-sam_admin_see_all_pages') == "on" && current_user_can('manage_options')) { // check if admin
+							}
 
-							$postarray["posts"][$access->post_id]["id"] = $access->post_id;
-							$postarray["categorys"][$categorys[0]->term_id]["category_count"]++;
-							$counter++;
 
-						}
+							// Add category counter
+							self::category_count( $access->post_id, true );
 
-						// Debug
-					    // 	print_r($access->post_id.' - '.$access->meta_value[0].' - '.$usercheck.'<br />');
+							// User has passed, so push array
+							array_push( $postarray, $access->post_id );
 
-						// exclude out of array if not in category
-						if ($is_in_category == false) {
-							array_pop($postarray); // delete last item of array
 						}
 
 					}
 
+					return $postarray;
+
 				}
-			}
-
-			return $postarray;
-
-		}
 
 	}
 
+	private static function category_count($postid,$available = true){
+
+		// Get category and add to array
+		$cats = get_the_terms($postid,'category');
+
+		// Available or not
+		if($available == true){
+			$available = "available";
+        }else{
+		    $available = "remove";
+        }
+
+		// Count the posts inside categorys
+		if(isset($cats)){
+			foreach ($cats as $c){
+
+				// Add one to category counter, available or not
+				if(isset(self::$category_counter[$c->term_id][$available])){
+					self::$category_counter[$c->term_id][$available]++;
+				}else{
+					self::$category_counter[$c->term_id][$available] = 1;
+				}
+
+			}
+		}
+
+		// Return the category counter
+		return self::$category_counter;
+
+    }
 	/**
 	 * Show all pages that are accessable by current user
 	 * @return string
@@ -514,25 +524,22 @@ class Xeweb_sam_main
 	    $return = '';
 
 		// get personal pages
-		$all_posts = self::get_personal_user_pages();
-
-		// print_r($all_posts);
+		$all_posts = self::$personalpages;
 
 		// admin message
 		if(current_user_can('manage_options')){
 			$return .=  '<p>'.__("You see this page because you are an Administrator, public pages are not listed.","xeweb_sam").'</p>';
 		}
 
-
 		// get al post links
-		if(isset($all_posts["posts"])) {
+		if(!empty($all_posts)) {
 			$return .= get_option('xeweb-sam_list_posts_text').'';
-			foreach ($all_posts["posts"] as $current_post) {
-				$current_post = get_post($current_post["id"]);
+			foreach ($all_posts as $current_post) {
+				$current_post = get_post($current_post);
 
 				$return .= '<a href="' . get_permalink($current_post->ID) . '">' . $current_post->post_title . '</a><br />';
 			}
-		}else{ // user has no personal posts.
+		}else{ // user has no personal posts
 			$return .= get_option('xeweb-sam_message_no_posts');
 		}
 
@@ -550,26 +557,34 @@ class Xeweb_sam_main
 	 */
 	public static function filter_categorys($terms,$taxonomies,$args,$term_query){
 
-		$user_pages = self::$userpages;
+	    $new_terms = array();
 
-		if(isset($terms->count)) {
-			foreach ( $terms as $key => $term ) {
-				if ( isset( $user_pages["categorys"] ) ) {
-					foreach ( $user_pages["categorys"] as $category => $data ) {
+	    $ccounter = self::$category_counter;
 
-						if ( isset( $term->term_id ) && $category == $term->term_id ) {
-							$terms[ $key ]->count = $data["category_count"];
-						}
 
-					}
-				} else {
-					$terms[ $key ]->count = 0;
-				}
-			}
+		if(!empty($terms)) {
+
+		    foreach ($terms as $term) {
+
+			    // Remove the amount of unavilable pages from the counter
+			    if(isset($term->term_id) && isset($ccounter[$term->term_id]["remove"])){
+				    $term->count = $term->count - $ccounter[$term->term_id]["remove"];
+			    }
+
+			    // Add to new array
+			    $new_terms[] = $term;
+
+			    if(isset($term->count)) {
+				    // Remove category from array if needed
+				    if ( $term->count == 0 && get_option( 'xeweb-sam_message_no_posts' ) != "on" ) {
+					    array_pop( $new_terms );
+				    }
+			    }
+		    }
 
 		}
 
-	    return $terms;
+	    return $new_terms;
 
     }
 

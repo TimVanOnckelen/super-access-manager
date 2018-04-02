@@ -30,6 +30,12 @@ You can control access to post for every specic user and on a role base.
 1. Select who can access your post on a user and role based level.
 
 == Changelog ==
+
+= 0.1.6 =
+* Tweak: the "txsc_allowed_users" key is replaced by "xeweb_sam-allowed_users"
+* Fix: Non available pages are filtert out category counters
+* Feature: Allow categorys to hide/Show automaticlly when no posts available
+
 = 0.1.5 =
 * Fix: renamed classes, functions, ... to adjust wordpress plugin dir requirements
 

@@ -66,6 +66,13 @@ function xeweb_sam_settingspage() {
                     </td>
                 </tr>
                 <tr valign="top">
+                    <th scope="row"><?php echo __("Remove empty categories from list","xeweb_sam");?></th>
+                    <td>
+                        <input type="checkbox" name="xeweb-sam_admin_remove_empty_cats" <?php if(get_option('xeweb-sam_admin_remove_empty_cats') == "on"){echo "checked";} ?> />
+                        <p class="description">(default checked)</p>
+                    </td>
+                </tr>
+                <tr valign="top">
                     <th scope="row"><?php echo __("Allow acces management for the following post types","xeweb_sam");?></th>
                     <td>
 	                        <?php

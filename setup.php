@@ -10,6 +10,11 @@ function xeweb_sam_install(){
 	}
 
 	// if shortcode is zero, add to options
+	if(get_option('xeweb-sam_admin_remove_empty_cats') == null){
+		update_option('xeweb-sam_admin_remove_empty_cats', 'on' );
+	}
+
+	// if shortcode is zero, add to options
 	if(get_option('xeweb-sam_message_no_posts') == null){
 		update_option('xeweb-sam_message_no_posts', __("You don't have personal pages at the moment.","super_access") );
 	}
