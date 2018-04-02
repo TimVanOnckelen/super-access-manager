@@ -30,6 +30,14 @@ You can control access to post for every specic user and on a role base.
 1. Select who can access your post on a user and role based level.
 
 == Changelog ==
+= 0.1.5 =
+* Fix: renamed classes, functions, ... to adjust wordpress plugin dir requirements
+
+= 0.1.4 =
+* Fix: Jquery is now loaded from the wordpress core
+* Fix: Unneassery defines are removed
+* Fix: Guest had no access on pages that hat rules before, now everyone has access when no rules is set
+
 = 0.1.3 =
 * Tweak: Filter out non accessable pages in category counters
 

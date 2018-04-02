@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Class Specific_content
+ * Class Xeweb_sam_main
  */
-class Specific_content
+class Xeweb_sam_main
 {
 
 	/**
@@ -69,7 +69,7 @@ class Specific_content
 		self::$userpages = self::get_personal_user_pages();
 
 		// add shortcode to load all pages
-		add_shortcode("txsc_all_pages",array(self::class,"show_all_user_pages"));
+		add_shortcode("xeweb-sam_user_pages",array(self::class,"show_all_user_pages"));
 
 		// add action
 		add_filter( 'the_content', array(self::class,'check_access') );
@@ -99,20 +99,15 @@ class Specific_content
 	 */
 	public static function loadJS(){
 
-		if(!wp_script_is('jquery')) {
-
-			wp_enqueue_script( 'jquery', 'js/jquery.min.js' );
-
-		}
-
-		wp_enqueue_script( 'select2_txsc', plugin_dir_url( __FILE__ ) . 'js/select2/select2.min.js');
+        wp_enqueue_script( 'jquery');
+		wp_enqueue_script( 'select2_xeweb-sam', plugin_dir_url( __FILE__ ) . 'js/select2/select2.min.js');
 	}
 
 	/**
 	 * Load css
 	 */
 	public static function loadCss() {
-		wp_enqueue_style( 'txsc', plugin_dir_url( __FILE__ )  . 'css/style.min.css' );
+		wp_enqueue_style( 'xeweb-sam', plugin_dir_url( __FILE__ )  . 'css/style.min.css' );
 		wp_enqueue_style( 'select2_style', plugin_dir_url( __FILE__ )  . 'js/select2/select2.min.css' );
 
 	}
@@ -123,10 +118,10 @@ class Specific_content
     public static function add_custom_meta_box(){
 
         add_meta_box(
-            'txsc_allowed_users',      // Unique ID
-	        __("User Access","tx_superaccess"),    // Title
+            'xeweb-sam_allowed_users',      // Unique ID
+	        __("User Access","xeweb_sam"),    // Title
             array(self::class,'post_custom_meta_box'),   // Callback function
-            'post',         // Admin page (or post type)
+	        get_option('txsx_allowed_post_types'),         // Admin page (or post type)
             'normal',         // Context
             'default'         // Priority
         );
@@ -141,21 +136,21 @@ class Specific_content
 
 
 		<p>
-            <label for="txsc_allowed_users"><?php __("Choose roles or/and users that have access to the post. If empty, post is accessable for everyone.","tx_superaccess")?></label>
+            <label for="xeweb-sam_allowed_users"><?php echo __("Choose roles or/and users that have access to the post. If empty, post is accessable for everyone.","xeweb_sam")?></label>
             <br />
 		</p>
 		<p>
 
-            <select  name="txsc_allowed_users[]" id="txsc_allowed_users" class="multiple_js_search" multiple="multiple" style="width: 100%" >
+            <select  name="xeweb-sam_allowed_users[]" id="xeweb-sam_allowed_users" class="multiple_js_search" multiple="multiple" style="width: 100%" >
                 <?php
                 // get users
                 $users = get_users();
                 // get allowed users
-                $post_meta = get_post_meta( $post->ID, 'txsc_allowed_users', true );
+                $post_meta = get_post_meta( $post->ID, 'xeweb-sam_allowed_users', true );
                 // get roles
 				$user_roles = get_editable_roles();
 
-
+                // Empty value
 				echo '<option value=""></option>';
 
 
@@ -230,10 +225,10 @@ class Specific_content
 		$post_type = get_post_type_object( $post->post_type );
 
 		/* Get the posted data and sanitize it for use as an HTML class. */
-		$new_meta_value = ( isset( $_POST['txsc_allowed_users'] ) ? $_POST['txsc_allowed_users']  : array() );
+		$new_meta_value = ( isset( $_POST['xeweb-sam_allowed_users'] ) ? $_POST['xeweb-sam_allowed_users']  : array() );
 
 		/* Get the meta key. */
-		$meta_key = 'txsc_allowed_users';
+		$meta_key = 'xeweb-sam_allowed_users';
 
 		/* Get the meta value of the custom field key. */
 		$meta_value = get_post_meta( $post_id, $meta_key, true );
@@ -243,7 +238,7 @@ class Specific_content
 			add_post_meta( $post_id, $meta_key, $new_meta_value, true );
 
 		/* If the new meta value does not match the old value, update it. */
-		elseif ( $new_meta_value && $new_meta_value != $meta_value )
+		elseif ( $new_meta_value != $meta_value )
 			update_post_meta( $post_id, $meta_key, $new_meta_value );
 
 		/* If there is no new meta value but an old value exists, delete it. */
@@ -263,47 +258,54 @@ class Specific_content
 		global $post;
 
 		/* Get the meta value of the custom field key. */
-		$meta_value = get_post_meta( $post->ID, 'txsc_allowed_users', true );
+		$meta_value = get_post_meta( $post->ID, 'xeweb-sam_allowed_users', true );
 
-		if(is_array($meta_value) && $post->post_type == "post"){ // check if there are access restrictions & user login
+		// Only do something is access has been set specificly
+		if(!empty($meta_array[0])) {
 
-			if( is_user_logged_in()){
+			if ( is_array( $meta_value ) && in_array( $post->post_type, get_option( 'txsx_allowed_post_types' ) ) ) { // check if there are access restrictions & user login
 
-				// standard no access
-				$has_access = false;
-				// current user
-				$current_user = wp_get_current_user();
-				// compare roles
-				$role_matches = array_intersect(array_map('strtolower',$meta_value),array_map('strtolower',$current_user->roles));
+				if ( is_user_logged_in() ) {
+
+					// standard no access
+					$has_access = false;
+					// current user
+					$current_user = wp_get_current_user();
+					// compare roles
+					$role_matches = array_intersect( array_map( 'strtolower', $meta_value ), array_map( 'strtolower', $current_user->roles ) );
 
 
-					if(in_array($current_user->ID,$meta_value) OR $role_matches[0] != null){ // check if user has access
+					if ( in_array( $current_user->ID, $meta_value ) OR isset( $role_matches[0] ) && $role_matches[0] != null ) { // check if user has access
 						// check user id and role
 						$has_access = true;
 
 					}
 
 					// only if admin mode on
-					if(get_option('txsc_admin_see_all_pages') == "on" && current_user_can('manage_options')){
+					if ( get_option( 'xeweb-sam_admin_see_all_pages' ) == "on" && current_user_can( 'manage_options' ) ) {
 
 						// admin message
-							echo '<p><i>'.__("You see this page because you are an Administrator","tx_superaccess").'</i></p>';
+						echo '<p><i>' . __( "You see this page because you are an Administrator", "xeweb_sam" ) . '</i></p>';
 
 						$has_access = true;
 					}
 
-			}else{ // not logged in, so no access at all.
+				} else { // not logged in, so no access at all.
 
+					// SETTINGS are set, so guests not allowed
+					if ( ! empty( $meta_array[0] ) ) {
 
-				self::go_404(); // no access for current user
+						self::go_404(); // no access for current user
+					}
+
+				}
+
+				// check if user got access
+				if ( $has_access != true ) {
+					self::go_404(); // No access for current user
+				}
 
 			}
-
-			// check if user got access
-			if($has_access != true){
-				self::go_404(); // No access for current user
-			}
-
 		}
 
 		return $content;
@@ -327,11 +329,10 @@ class Specific_content
 		foreach ($posts as $post){
 
 		    // Check if the post has a meta array
-			$meta_array = get_post_meta($post->ID,"txsc_allowed_users",true);
-
+			$meta_array = get_post_meta($post->ID,"xeweb-sam_allowed_users",true);
 
 			// no settings, nothing to check, so prob public post
-			if(empty($meta_array)){
+			if(empty($meta_array) OR empty($meta_array[0])){
 
 				$postarray[] = $post;
 
@@ -370,7 +371,7 @@ class Specific_content
 
 					$postarray[] = $post;
 
-				}elseif(get_option('txsc_admin_see_all_pages') == "on" && current_user_can('manage_options')){ // check if admin
+				}elseif(get_option('xeweb-sam_admin_see_all_pages') == "on" && current_user_can('manage_options')){ // check if admin
 
 					$postarray[] = $post;
 
@@ -409,7 +410,7 @@ class Specific_content
 
 			// get all meta data from this plugin
 			$metas = $wpdb->get_results(
-				$wpdb->prepare("SELECT meta_value,post_id FROM $wpdb->postmeta where meta_key = %s ORDER BY post_id DESC", 'txsc_allowed_users')
+				$wpdb->prepare("SELECT meta_value,post_id FROM $wpdb->postmeta where meta_key = %s ORDER BY post_id DESC", 'xeweb-sam_allowed_users')
 			);
 
 
@@ -424,8 +425,13 @@ class Specific_content
 
 					$postdata = get_post_field('post_status',$access->post_id);
 
-					if($postdata == 'publish' && $counter < get_option('txsc_post_limit_widget') ) {
+					if($postdata == 'publish' && $counter < get_option('xeweb-sam_post_limit_widget') ) {
 						$categorys = get_the_category($access->post_id);
+
+						// Set as first category if only on cat
+						if(!isset($categorys[0])){
+							$categorys[0] = $categorys;
+                        }
 
 						// only add to array if category is selected
 						if ($category) {
@@ -446,8 +452,8 @@ class Specific_content
 						$usercheck = in_array($current_user->ID, $access->meta_value);
 						$rolecheck = false;
 
-						// Set category count to zero
-						$postarray["categorys"][$categorys[0]->term_id]["category_count"] = 0;
+                        // Set category count to zero
+                        // $postarray["categorys"][ $categorys[0]->term_id ]["category_count"] = 0;
 
 						// check roles
 						foreach ($current_user->roles as $role) {
@@ -472,7 +478,7 @@ class Specific_content
 							$postarray["categorys"][$categorys[0]->term_id]["category_count"]++;
 							$counter++;
 
-						} elseif (get_option('txsc_admin_see_all_pages') == "on" && current_user_can('manage_options')) { // check if admin
+						} elseif (get_option('xeweb-sam_admin_see_all_pages') == "on" && current_user_can('manage_options')) { // check if admin
 
 							$postarray["posts"][$access->post_id]["id"] = $access->post_id;
 							$postarray["categorys"][$categorys[0]->term_id]["category_count"]++;
@@ -514,20 +520,20 @@ class Specific_content
 
 		// admin message
 		if(current_user_can('manage_options')){
-			$return .=  '<p>'.__("You see this page because you are an Administrator, public pages are not listed.","tx_superaccess").'</p>';
+			$return .=  '<p>'.__("You see this page because you are an Administrator, public pages are not listed.","xeweb_sam").'</p>';
 		}
 
 
 		// get al post links
-		if(isset($all_posts)) {
-			$return .= get_option('txsx_list_posts_text').'';
+		if(isset($all_posts["posts"])) {
+			$return .= get_option('xeweb-sam_list_posts_text').'';
 			foreach ($all_posts["posts"] as $current_post) {
 				$current_post = get_post($current_post["id"]);
 
 				$return .= '<a href="' . get_permalink($current_post->ID) . '">' . $current_post->post_title . '</a><br />';
 			}
 		}else{ // user has no personal posts.
-			$return .= get_option('txsc_message_no_posts');
+			$return .= get_option('xeweb-sam_message_no_posts');
 		}
 
 		return $return;
@@ -546,14 +552,21 @@ class Specific_content
 
 		$user_pages = self::$userpages;
 
-		foreach($terms as $key => $term) {
-			foreach ( $user_pages["categorys"] as $category => $data ) {
+		if(isset($terms->count)) {
+			foreach ( $terms as $key => $term ) {
+				if ( isset( $user_pages["categorys"] ) ) {
+					foreach ( $user_pages["categorys"] as $category => $data ) {
 
-				if ( $category == $term->term_id ){
-				    $terms[$key]->count = $data["category_count"];
-                }
+						if ( isset( $term->term_id ) && $category == $term->term_id ) {
+							$terms[ $key ]->count = $data["category_count"];
+						}
 
-            }
+					}
+				} else {
+					$terms[ $key ]->count = 0;
+				}
+			}
+
 		}
 
 	    return $terms;
