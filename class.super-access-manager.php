@@ -576,7 +576,7 @@ class Xeweb_sam_main
 
 			    if(isset($term->count)) {
 				    // Remove category from array if needed
-				    if ( $term->count == 0 && get_option( 'xeweb-sam_message_no_posts' ) != "on" ) {
+				    if ( $term->count <= 0 && get_option( 'xeweb-sam_admin_remove_empty_cats' ) == "on" ) {
 					    array_pop( $new_terms );
 				    }
 			    }

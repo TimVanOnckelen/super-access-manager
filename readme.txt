@@ -31,6 +31,9 @@ You can control access to post for every specic user and on a role base.
 
 == Changelog ==
 
+= 0.1.6.1 =
+* Tweak: Added legacy updater
+
 = 0.1.6 =
 * Tweak: the "txsc_allowed_users" key is replaced by "xeweb_sam-allowed_users"
 * Fix: Non available pages are filtert out category counters

@@ -7,7 +7,7 @@ $xewebSam = new Xeweb_sam_main();
 function xeweb_sam_create_menu() {
 
     //create new top-level menu
-    add_submenu_page('users.php','Super access manager', 'Super access manager', 'administrator', __FILE__, 'xeweb_sam_settingspage' , false);
+    add_submenu_page('users.php','Super access manager', 'Super access manager', 'administrator', 'xeweb_sam_settings', 'xeweb_sam_settingspage' , false);
 
     //call register settings function
     add_action( 'admin_init', 'xeweb_sam_register_settings' );
@@ -22,10 +22,30 @@ function xeweb_sam_register_settings() {
     register_setting( 'xeweb-sam-settings-group', 'xeweb-sam_post_limit_widget' );
     register_setting( 'xeweb-sam-settings-group', 'xeweb-sam_list_posts_text' );
 	register_setting( 'xeweb-sam-settings-group', 'xeweb-sam_allowed_post_types' );
+	register_setting( 'xeweb-sam-settings-group', 'xeweb-sam_admin_remove_empty_cats' );
 }
 
-function xeweb_sam_settingspage() {
+function xeweb_sam_settingspage(){
 
+	if(isset($_GET["legacyupdate"])){
+
+	    // Dry run or not
+	    $dry = true;
+
+	    if(isset($_GET["legacyupdate"])){
+	        $dry = $_GET["dry"];
+	    }
+
+		xeweb_sam_legacy_update($dry);
+
+    }else {
+
+		// Show the settings page
+		xeweb_sam_show_settingspage();
+
+	}
+}
+function xeweb_sam_show_settingspage() {
 
     ?>
     <div class="wrap metabox-holder">
@@ -94,4 +114,47 @@ function xeweb_sam_settingspage() {
 
         </form>
         </div>
-<?php } ?>
+<?php }
+
+/*
+ * Update older keys with new keys */
+function xeweb_sam_legacy_update($dry=true){
+
+	global $wpdb;
+
+	// get all meta data from this plugin by old key
+	$metas = $wpdb->get_results(
+		$wpdb->prepare("SELECT meta_value,post_id FROM $wpdb->postmeta where meta_key = %s ORDER BY post_id DESC", 'txsc_allowed_users')
+	);
+
+	if(!empty($metas)) {
+		// Update to new data
+		foreach ( $metas as $meta ) {
+
+		    // Dry run text
+		    $dry_text = __("dry update","xeweb_sam");
+
+		    if($dry == false) {
+			    // Add new data to new key
+			    add_post_meta( $meta->post_id, "xeweb_sam-allowed_users", $meta->meta_value );
+
+			    // remove the old data
+			    // delete_post_meta( $meta->post_id, $meta->meta_key, $meta->meta_value );
+
+			    $dry_text = __("updated","xeweb_sam");;
+
+		    }
+
+            // Echo the dry text
+		    echo $meta->post_id." (".$dry_text.")";
+
+		}
+	}else{
+		// No data to update :)
+		echo __("No older data needs to be updated.","super_access");
+	}
+
+}
+?>
+
+

@@ -2,10 +2,10 @@
 /*
 * Plugin Name: Super Access Manager
 * Description: Control post access on a role and userbased level.
-* Version:     0.1.5
+* Version:     0.1.6.1
 * Author:      Xeweb
 * Author URI:  https://www.xeweb.be
-* Text Domain: super_access
+* Text Domain: xeweb_sam
 */
 
 	// Disable direct access
