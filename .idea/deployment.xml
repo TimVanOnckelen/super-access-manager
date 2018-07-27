@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="LocalDev">
+    <serverData>
+      <paths name="68 Site">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="wp_plugins/super-access-manager" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Eddy Kipcorn">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="LocalDev">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/public_html/wp/wp-content/plugins/super-access-manager" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
