@@ -30,6 +30,9 @@ You can control access to post for every specic user and on a role base.
 1. Select who can access your post on a user and role based level.
 
 == Changelog ==
+= 0.2.2 =
+* Feature: Admins can enable the option to automaticly remove unaccesable posts from menus.
+
 = 0.2 =
 * Edit: Added new plugin structure
 * Tweak: Add icon to list overview if post is protected

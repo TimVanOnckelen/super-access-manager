@@ -22,6 +22,7 @@ function xeweb_sam_register_settings() {
     register_setting( 'xeweb-sam-settings-group', 'xeweb-sam_list_posts_text' );
 	register_setting( 'xeweb-sam-settings-group', 'xeweb-sam_allowed_post_types' );
 	register_setting( 'xeweb-sam-settings-group', 'xeweb-sam_admin_remove_empty_cats' );
+	register_setting( 'xeweb-sam-settings-group','xeweb-sam_auto_menu_remove');
 }
 
 function xeweb_sam_settingspage(){
@@ -62,6 +63,13 @@ function xeweb_sam_show_settingspage() {
                         ?>
                         </select>
                         <p class="description"><?php echo __('If empty, will redirect to 404 page','xe_sam'); ?></p>
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row"><?php echo __("Remove unaccessable pages automaticly from menu's","xeweb_sam");?></th>
+                    <td>
+                        <input type="checkbox" name="xeweb-sam_auto_menu_remove" <?php if(get_option('xeweb-sam_auto_menu_remove') == "on"){echo "checked";} ?> />
+                        <p class="description">(default unchecked)</p>
                     </td>
                 </tr>
                 <tr valign="top">

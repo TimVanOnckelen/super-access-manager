@@ -24,6 +24,8 @@ class AccessManager {
 
 	private $category_counter = array();
 
+	private $currentPost = 0;
+
 	/**
 	 * Specific_content constructor.
 	 */
@@ -85,7 +87,11 @@ class AccessManager {
 		// Filter out the posts
 		add_filter( 'the_posts', array($this,'filter_posts') );
 
+		// Filter out categorys
 		add_filter( 'get_terms', array($this,'filter_categorys'), 10, 4 );
+
+		// Filter menu's
+        add_filter('wp_get_nav_menu_items',array($this,'filter_menu'),10,3);
 
 
 	}
@@ -249,6 +255,7 @@ class AccessManager {
 
 	}
 
+
 	/**
 	 * Filter out posts that are not allowed for the user
 	 * @param $posts
@@ -266,54 +273,10 @@ class AccessManager {
 		// For each post
 		foreach ($posts as $post){
 
-			// Check if the post has a meta array
-			$meta_array = get_post_meta($post->ID,"txsc_allowed_users",true);
-
-			// no settings, nothing to check, so prob public post
-			if(empty($meta_array) OR empty($meta_array[0])){
-
-				$postarray[] = $post;
-
-			}else{ // Post has specific access settings
-
-				$rolecheck = false;
-				$usercheck = false;
-
-				// check for roles
-				if(!empty($current_user->roles) && is_array($meta_array)) {
-
-					// check for user
-					$usercheck = in_array($current_user->ID, $meta_array);
-
-					// check roles
-					foreach ( $current_user->roles as $role ) {
-
-						if ( in_array( ucfirst ($role), $meta_array ) ) {
-
-							$rolecheck = true;
-
-						}
-
-					}
-				}
-
-				if ($usercheck == true) { // check if user has posts
-
-					if($meta_array != 0) { // check if post id is not zero
-						$postarray[] = $post;
-					}
-
-				}elseif($rolecheck == true && $usercheck != true){ // check roles
-
-					$postarray[] = $post;
-
-				}elseif(get_option('xeweb-sam_admin_see_all_pages') == "on" && current_user_can('manage_options')){ // check if admin
-
-					$postarray[] = $post;
-
-				}
-			}
-
+		    // Add post if user can access
+            if($this->userCanAccess($post->ID,$current_user->ID) === true){
+                $postarray[] = $post;
+            }
 
 		}
 
@@ -327,6 +290,71 @@ class AccessManager {
 
         // No posts, then whe go 404
         return $postarray;
+
+	}
+
+	/**
+     * Check if a user can access
+	 * @param $post
+	 * @param $current_user
+	 *
+	 * @return bool
+	 */
+	private function userCanAccess($post,$current_user){
+
+	    // Get the current user
+	    $current_user = get_user_by('ID',$current_user);
+
+		// Check if the post has a meta array
+		$meta_array = get_post_meta($post,"txsc_allowed_users",true);
+
+		// no settings, nothing to check, so prob public post
+		if(empty($meta_array) OR empty($meta_array[0])){
+
+			return true;
+
+		}else{ // Post has specific access settings
+
+
+			$rolecheck = false;
+			$usercheck = false;
+
+			// check for roles
+			if(!empty($current_user->roles) && is_array($meta_array)) {
+
+				// check for user
+				$usercheck = in_array($current_user, $meta_array);
+
+				// check roles
+				foreach ( $current_user->roles as $role ) {
+
+					if ( in_array( ucfirst ($role), $meta_array ) ) {
+
+						$rolecheck = true;
+
+					}
+
+				}
+			}
+
+			if ($usercheck == true) { // check if user has posts
+
+				if($meta_array != 0) { // check if post id is not zero
+					return true;
+				}
+
+			}elseif($rolecheck == true && $usercheck != true){ // check roles
+
+				return true;
+
+			}elseif(get_option('xeweb-sam_admin_see_all_pages') == "on" && current_user_can('manage_options')){ // check if admin
+
+				return true;
+
+			}
+		}
+
+		return null;
 
 	}
 
@@ -568,6 +596,38 @@ class AccessManager {
 
 	}
 
+	/**
+     * Filter out the non accessable items from the menu
+	 * @param $items
+	 * @param $menu
+	 * @param $args
+	 *
+	 * @return mixed
+	 */
+	public function filter_menu($items, $menu, $args){
+
+	    // Only go on when enabled
+	    if(get_option('xeweb-sam_auto_menu_remove') != "on")
+	        return $items;
+
+	    // Loop over every item
+		foreach ( $items as $key => $item ) {
+
+		    // get the cyrrent user
+		    $current_user = get_current_user_id();
+
+			// Check if current user can access
+			$usercan = $this->userCanAccess($item->object_id ,$current_user);
+
+			// If not, remove from list
+			if ( $usercan != true ) unset( $items[$key] );
+
+		}
+
+
+		return $items;
+
+    }
 
 	/**
 	 * Go to 404 page
@@ -578,11 +638,13 @@ class AccessManager {
 
 	    if(!$userset_page){ // No user given page id, so user standard 404
 
-	        // Just return nothing
-            return null;
+	        return '-1';
+
 
 	    }else{ // redirect by given page id
-		    return get_post($userset_page);
+
+            return $userset_page;
+
         }
 
 	}
