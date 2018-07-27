@@ -2,7 +2,7 @@
 /*
 * Plugin Name: Super Access Manager
 * Description: Control post access on a role and userbased level.
-* Version:     0.2
+* Version:     0.2.1
 * Author:      Xeweb
 * Author URI:  https://www.xeweb.be
 * Text Domain: xeweb_sam
@@ -17,7 +17,7 @@
 	// Include the autoloader so we can dynamically include the rest of the classes.
 	require_once( trailingslashit( dirname( __FILE__ ) ) . 'inc/autoloader.php' );
 
-    require_once('includes/sc_settings.php');
+    require_once('config/sc_settings.php');
 
     // Default settings
     require_once('setup.php');
