@@ -19,7 +19,7 @@
       <paths name="LocalDev">
         <serverdata>
           <mappings>
-            <mapping deploy="/public_html/wp/wp-content/plugins/super-access-manager" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/public_html/wp/wp-content/plugins/super-access-manager" local="$PROJECT_DIR$/" web="/" />
           </mappings>
         </serverdata>
       </paths>

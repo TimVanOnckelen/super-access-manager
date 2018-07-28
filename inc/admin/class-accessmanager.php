@@ -162,6 +162,22 @@ class AccessManager {
 			$post_meta = get_post_meta( $post->ID, 'txsc_allowed_users', true );
 			// get roles
 			$user_roles = get_editable_roles();
+
+			$only_vistors_selected = '';
+			$only_users_selected = '';
+
+			if(is_array($post_meta)) {
+				// Add selected to only vistors if selected
+				if ( in_array( 'onlyvistors', $post_meta ) ) {
+					$only_vistors_selected = 'selected';
+				}
+
+				// Add selected to only users if selected
+				if ( in_array( 'onlyusers', $post_meta ) ) {
+					$only_users_selected = 'selected';
+				}
+			}
+
 			?>
 
 			<select name="txsc_allowed_users[]" id="txsc_allowed_users" class="multiple_js_search" multiple="multiple" style="width: 100%" >
@@ -170,6 +186,11 @@ class AccessManager {
 				// Empty value
 				echo '<option value=""></option>';
 
+
+				// check user roles
+				echo '<option disabled><b>---- '.__('Authentication','xeweb_sam').' ----</b></option>';
+				echo '<option value="onlyvistors" '.$only_vistors_selected.'>'.__('Only Visitors','xeweb_sam').'</option>';
+				echo '<option value="onlyusers" '.$only_users_selected.'>'.__('Only Registerd Users','xeweb_sam').'</option>';
 
 				// check user roles
 				echo '<option disabled><b>---- Roles ----</b></option>';
@@ -263,6 +284,8 @@ class AccessManager {
 	 */
 	public function filter_posts($posts){
 
+	    $postarray = array();
+
 		// Get the current user
 		$current_user = wp_get_current_user();
 		$amount_of_posts = count($posts);
@@ -315,9 +338,36 @@ class AccessManager {
 
 		}else{ // Post has specific access settings
 
-
 			$rolecheck = false;
 			$usercheck = false;
+
+			// check if only available vistors
+            if(in_array('onlyvistors',$meta_array)){
+
+                // Vistors can see or Admins  - Not available for other users
+                if(!isset($current_user->ID) OR get_option('xeweb-sam_admin_see_all_pages') == "on" && current_user_can('manage_options')){
+                    return true;
+                }
+
+                // Not available for other users
+                return null;
+
+            }
+
+			// check if only registerd users
+			if(in_array('onlyusers',$meta_array)){
+
+				// Check if user is set, if user, page is available
+				if(isset($current_user->ID)){
+					return true;
+				}
+
+				// Not available for other users
+				return null;
+
+			}
+
+
 
 			// check for roles
 			if(!empty($current_user->roles) && is_array($meta_array)) {

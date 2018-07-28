@@ -6,12 +6,21 @@ Requires at least: 4.0
 Tested up to: 4.9.4
 Requires PHP: 5.6
 License: GPLv3
+Stable tag: 0.2.2
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Manage access to your post in a more advanced way. Allow specific users and roles to access your blog posts.
 
 == Description ==
 Manage access to your post in a more advanced way. Allow specific users and roles to access your blog posts.
+
+Features:
+- Control access to Posts, pages and custom post types
+- Make posts available on a user role base or grant access to specific users
+- Create personal pages
+- Auto hide pages in menu’s
+- Use shortcode [xeweb-sam_user_pages] to show all user pages
+- Regular updates & bugfixes
 
 == Installation ==
 1. Go in to your WordPress Admin Panel
@@ -26,10 +35,19 @@ You can manage access for every post type, custom or native.
 = Can you control access on a user based level? =
 You can control access to post for every specic user and on a role base.
 
+
+= Where to find the super access manager control panel?? =
+You can find the control panel under the users section
+
 == Screenshots ==
 1. Select who can access your post on a user and role based level.
 
 == Changelog ==
+= 0.2.3 =
+* Fix: Fixed error when debug on
+* Feature: You can make a pagge only accesable for visitors
+* Feature: You can make a page only accessable to registerd users
+
 = 0.2.2 =
 * Feature: Admins can enable the option to automaticly remove unaccesable posts from menus.
 
