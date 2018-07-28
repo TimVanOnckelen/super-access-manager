@@ -6,7 +6,7 @@ Requires at least: 4.0
 Tested up to: 4.9.4
 Requires PHP: 5.6
 License: GPLv3
-Stable tag: 0.2.2
+Stable tag: 0.2.3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 Manage access to your post in a more advanced way. Allow specific users and roles to access your blog posts.
@@ -17,6 +17,7 @@ Manage access to your post in a more advanced way. Allow specific users and role
 Features:
 - Control access to Posts, pages and custom post types
 - Make posts available on a user role base or grant access to specific users
+- Make posts only available for visitors or registered users
 - Create personal pages
 - Auto hide pages in menu’s
 - Use shortcode [xeweb-sam_user_pages] to show all user pages
@@ -35,21 +36,32 @@ You can manage access for every post type, custom or native.
 = Can you control access on a user based level? =
 You can control access to post for every specic user and on a role base.
 
+= What are visitors? =
+Visitors are user that are not logged in to you website.
 
-= Where to find the super access manager control panel?? =
+= What are registered users =
+Users with an account, currently logged in to your website.
+
+= Can you control access by login status? =
+You can give access to a post to only registered users or to visitors only.
+
+= Where to find the super access manager control panel? =
 You can find the control panel under the users section
 
 == Screenshots ==
 1. Select who can access your post on a user and role based level.
 
 == Changelog ==
+= 0.2.3.1 =
+* Lang: Added Dutch Translation
+
 = 0.2.3 =
 * Fix: Fixed error when debug on
-* Feature: You can make a pagge only accesable for visitors
-* Feature: You can make a page only accessable to registerd users
+* Feature: You can make a page only accessible for visitors
+* Feature: You can make a page only accessible to registered users
 
 = 0.2.2 =
-* Feature: Admins can enable the option to automaticly remove unaccesable posts from menus.
+* Feature: Admins can enable the option to automatically remove unaccessible posts from menus.
 
 = 0.2 =
 * Edit: Added new plugin structure
@@ -59,7 +71,7 @@ You can find the control panel under the users section
 = 0.1.6.2 =
 * Remove: Legacy updated removed
 * Tweak: the "xeweb_sam-allowed_users" key is replaced by "txsc_allowed_users"
-* Tweak: Admins can select to enable access management for diffrent post types
+* Tweak: Admins can select to enable access management for different post types
 
 = 0.1.6.1 =
 * Tweak: Added legacy updater
@@ -67,7 +79,7 @@ You can find the control panel under the users section
 = 0.1.6 =
 * Tweak: the "txsc_allowed_users" key is replaced by "xeweb_sam-allowed_users"
 * Fix: Non available pages are filtert out category counters
-* Feature: Allow categorys to hide/Show automaticlly when no posts available
+* Feature: Allow categorys to hide/Show automatically when no posts available
 
 = 0.1.5 =
 * Fix: renamed classes, functions, ... to adjust wordpress plugin dir requirements
@@ -78,7 +90,7 @@ You can find the control panel under the users section
 * Fix: Guest had no access on pages that hat rules before, now everyone has access when no rules is set
 
 = 0.1.3 =
-* Tweak: Filter out non accessable pages in category counters
+* Tweak: Filter out non accessible pages in category counters
 
 = 0.1.2 =
-* Base plugin relaese
+* Base plugin release

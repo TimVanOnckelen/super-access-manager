@@ -190,7 +190,7 @@ class AccessManager {
 				// check user roles
 				echo '<option disabled><b>---- '.__('Authentication','xeweb_sam').' ----</b></option>';
 				echo '<option value="onlyvistors" '.$only_vistors_selected.'>'.__('Only Visitors','xeweb_sam').'</option>';
-				echo '<option value="onlyusers" '.$only_users_selected.'>'.__('Only Registerd Users','xeweb_sam').'</option>';
+				echo '<option value="onlyusers" '.$only_users_selected.'>'.__('Only registered Users','xeweb_sam').'</option>';
 
 				// check user roles
 				echo '<option disabled><b>---- Roles ----</b></option>';
